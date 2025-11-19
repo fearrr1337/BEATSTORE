@@ -13,16 +13,60 @@
                     </div>
                 {% endif %}
 
-                <div class="audio-player">
-                    <audio id="beatAudio" controls>
+                <div class="audio-player-custom">
+                    <div class="player-header">
+                        <h3>Now Playing</h3>
+                        <span class="track-title">{{ beat.title }}</span>
+                    </div>
+
+                    <div class="waveform-container">
+                        <div class="waveform" id="waveform">
+                            <div class="waveform-progress" id="waveformProgress"></div>
+                        </div>
+                    </div>
+
+                    <div class="player-controls">
+                        <button class="control-btn" id="playPauseBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span id="duration">0:00</span>
+                        </div>
+
+                        <div class="volume-control">
+                            <button class="volume-btn" id="volumeBtn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <div class="volume-slider-container">
+                                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0">
+                    </div>
+
+                    <!-- Hidden audio element -->
+                    <audio id="beatAudio">
                         {% if is_purchased or current_user.id == beat.user_id %}
                             <source src="{{ url_for('serve_audio', filename=beat.audio_file) }}" type="audio/mpeg">
                         {% else %}
-                            <!-- Preview version or limited playback -->
+                            <!-- For non-purchased beats, you could add a preview version -->
+                            <source src="{{ url_for('serve_audio', filename=beat.audio_file) }}" type="audio/mpeg">
                         {% endif %}
                         Your browser does not support the audio element.
                     </audio>
                 </div>
+
+                {% if not is_purchased and current_user.id != beat.user_id %}
+                <div class="preview-notice">
+                    <i class="fas fa-headphones"></i>
+                    <span>Preview - Purchase to download full track</span>
+                </div>
+                {% endif %}
             </div>
 
             <div class="beat-info-detail">
@@ -66,8 +110,487 @@
                         <a href="{{ url_for('login') }}" class="btn btn-primary">Login to Purchase</a>
                     {% endif %}
                 </div>
+
+                {% if current_user.id == beat.user_id %}
+                <div class="owner-actions">
+                    <h4>Track Management</h4>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">{{ beat.purchases|length }}</span>
+                            <span class="stat-label">Sales</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${{ "%.2f"|format(beat.price * beat.purchases|length) }}</span>
+                            <span class="stat-label">Revenue</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.audio-player-custom {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    border: 1px solid #333;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.player-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.player-header h3 {
+    color: #ff6b6b;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.track-title {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.waveform-container {
+    margin: 1.5rem 0;
+}
+
+.waveform {
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(90deg, #333 0%, #444 100%);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.waveform-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b 0%, #ffa726 100%);
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.1s ease;
+}
+
+.waveform::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 255, 255, 0.1) 2px,
+            rgba(255, 255, 255, 0.1) 4px
+        );
+    pointer-events: none;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b, #ffa726);
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.control-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.control-btn.playing {
+    background: linear-gradient(135deg, #ffa726, #ff6b6b);
+}
+
+.time-display {
+    display: flex;
+    gap: 0.5rem;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin-left: 80px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 5px;
+    transition: color 0.3s;
+}
+
+.volume-btn:hover {
+    color: #ff6b6b;
+}
+
+.volume-slider-container {
+    width: 80px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-top: -6px;
+}
+
+.volume-control:hover .volume-slider-container {
+    opacity: 1;
+}
+
+.volume-slider,
+.progress-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #333;
+    outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb,
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover,
+.progress-slider::-webkit-slider-thumb:hover {
+    background: #ffa726;
+    transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb,
+.progress-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    cursor: pointer;
+    border: none;
+}
+
+.progress-container {
+    margin-top: 1rem;
+}
+
+.preview-notice {
+    background: linear-gradient(135deg, #ffa726, #ff6b6b);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.preview-notice i {
+    margin-right: 0.5rem;
+}
+
+.owner-actions {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+    border-left: 4px solid #ff6b6b;
+}
+
+.owner-actions h4 {
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+}
+
+.stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff6b6b;
+}
+
+.stat-label {
+    display: block;
+    color: #ccc;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Animation for waveform */
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+.waveform.loading::before {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .player-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .volume-control {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .volume-slider-container {
+        opacity: 1;
+        width: 120px;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const audio = document.getElementById('beatAudio');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const progressSlider = document.getElementById('progressSlider');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeBtn = document.getElementById('volumeBtn');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const waveformProgress = document.getElementById('waveformProgress');
+    const waveform = document.getElementById('waveform');
+
+    let isPlaying = false;
+
+    // Format time from seconds to MM:SS
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Update time display
+    function updateTimeDisplay() {
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        durationEl.textContent = formatTime(audio.duration || 0);
+    }
+
+    // Update progress
+    function updateProgress() {
+        if (audio.duration) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressSlider.value = progress;
+            waveformProgress.style.width = `${progress}%`;
+        }
+    }
+
+    // Toggle play/pause
+    function togglePlayPause() {
+        if (isPlaying) {
+            audio.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playPauseBtn.classList.remove('playing');
+        } else {
+            audio.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            playPauseBtn.classList.add('playing');
+        }
+        isPlaying = !isPlaying;
+    }
+
+    // Seek audio
+    function seekAudio() {
+        const seekTime = (progressSlider.value / 100) * audio.duration;
+        audio.currentTime = seekTime;
+    }
+
+    // Update volume
+    function updateVolume() {
+        audio.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+    }
+
+    // Update volume icon based on volume level
+    function updateVolumeIcon() {
+        const volume = audio.volume;
+        if (volume === 0) {
+            volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        } else if (volume < 0.5) {
+            volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+        } else {
+            volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        }
+    }
+
+    // Toggle mute
+    function toggleMute() {
+        if (audio.volume > 0) {
+            audio.volume = 0;
+            volumeSlider.value = 0;
+        } else {
+            audio.volume = 0.8;
+            volumeSlider.value = 80;
+        }
+        updateVolumeIcon();
+    }
+
+    // Click on waveform to seek
+    function seekOnWaveform(event) {
+        const rect = waveform.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        audio.currentTime = percentage * audio.duration;
+    }
+
+    // Event listeners
+    playPauseBtn.addEventListener('click', togglePlayPause);
+
+    progressSlider.addEventListener('input', seekAudio);
+
+    volumeSlider.addEventListener('input', updateVolume);
+    volumeBtn.addEventListener('click', toggleMute);
+
+    waveform.addEventListener('click', seekOnWaveform);
+
+    audio.addEventListener('loadedmetadata', function() {
+        updateTimeDisplay();
+        // Generate random waveform bars (simulated)
+        generateWaveform();
+    });
+
+    audio.addEventListener('timeupdate', function() {
+        updateProgress();
+        updateTimeDisplay();
+    });
+
+    audio.addEventListener('ended', function() {
+        isPlaying = false;
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        playPauseBtn.classList.remove('playing');
+        audio.currentTime = 0;
+        updateProgress();
+    });
+
+    audio.addEventListener('volumechange', updateVolumeIcon);
+
+    // Generate simulated waveform
+    function generateWaveform() {
+        waveform.innerHTML = '<div class="waveform-progress" id="waveformProgress"></div>';
+        waveformProgress = document.getElementById('waveformProgress');
+
+        // Create waveform bars
+        for (let i = 0; i < 100; i++) {
+            const bar = document.createElement('div');
+            bar.style.position = 'absolute';
+            bar.style.bottom = '0';
+            bar.style.left = `${i}%`;
+            bar.style.width = '1%';
+            bar.style.height = `${Math.random() * 80 + 20}%`;
+            bar.style.backgroundColor = '#555';
+            bar.style.borderRadius = '1px';
+            bar.style.transition = 'background-color 0.3s';
+            waveform.appendChild(bar);
+        }
+    }
+
+    // Initialize volume
+    updateVolumeIcon();
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            togglePlayPause();
+        }
+
+        if (e.code === 'ArrowLeft') {
+            e.preventDefault();
+            audio.currentTime = Math.max(0, audio.currentTime - 5);
+        }
+
+        if (e.code === 'ArrowRight') {
+            e.preventDefault();
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+        }
+
+        if (e.code === 'ArrowUp') {
+            e.preventDefault();
+            audio.volume = Math.min(1, audio.volume + 0.1);
+            volumeSlider.value = audio.volume * 100;
+            updateVolumeIcon();
+        }
+
+        if (e.code === 'ArrowDown') {
+            e.preventDefault();
+            audio.volume = Math.max(0, audio.volume - 0.1);
+            volumeSlider.value = audio.volume * 100;
+            updateVolumeIcon();
+        }
+    });
+
+    // Add loading state
+    audio.addEventListener('waiting', function() {
+        waveform.classList.add('loading');
+    });
+
+    audio.addEventListener('canplay', function() {
+        waveform.classList.remove('loading');
+    });
+});
+</script>
 {% endblock %}
