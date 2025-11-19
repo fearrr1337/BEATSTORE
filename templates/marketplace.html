@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="marketplace-container">
+    <div class="container">
+        <div class="marketplace-header">
+            <h1>Beat Marketplace</h1>
+            <p>Discover amazing beats from talented producers</p>
+        </div>
+
+        <div class="marketplace-controls">
+            <div class="filters">
+                <form method="GET" class="filter-form">
+                    <div class="filter-group">
+                        <label for="genre">Genre:</label>
+                        <select id="genre" name="genre" onchange="this.form.submit()">
+                            <option value="">All Genres</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre }}" {% if current_genre == genre %}selected{% endif %}>
+                                {{ genre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">Sort by:</label>
+                        <select id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+                            <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <div class="results-info">
+                <p>Showing {{ beats.items|length }} of {{ beats.total }} beats</p>
+            </div>
+        </div>
+
+        {% if beats.items %}
+        <div class="beats-grid">
+            {% for beat in beats.items %}
+            <div class="beat-card">
+                <div class="beat-cover">
+                    {% if beat.cover_image %}
+                        <img src="{{ url_for('static', filename='images/' + beat.cover_image) }}" alt="{{ beat.title }}">
+                    {% else %}
+                        <div class="default-cover">
+                            <i class="fas fa-music"></i>
+                        </div>
+                    {% endif %}
+                    <div class="beat-overlay">
+                        <a href="{{ url_for('beat_detail', beat_id=beat.id) }}" class="btn-play">
+                            <i class="fas fa-play"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="beat-info">
+                    <h3><a href="{{ url_for('beat_detail', beat_id=beat.id) }}">{{ beat.title }}</a></h3>
+                    <p class="beat-creator">By {{ beat.creator.username }}</p>
+                    <p class="beat-price">${{ "%.2f"|format(beat.price) }}</p>
+                    <div class="beat-meta">
+                        <span>{{ beat.bpm }} BPM</span>
+                        <span>{{ beat.genre }}</span>
+                    </div>
+                    <div class="beat-date">
+                        {{ beat.created_at.strftime('%b %d, %Y') }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if beats.pages > 1 %}
+        <div class="pagination">
+            {% if beats.has_prev %}
+                <a href="{{ url_for('marketplace', page=beats.prev_num, genre=current_genre, sort=current_sort) }}" class="page-link">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+
+            {% for page_num in beats.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                {% if page_num %}
+                    {% if page_num != beats.page %}
+                        <a href="{{ url_for('marketplace', page=page_num, genre=current_genre, sort=current_sort) }}" class="page-link">
+                            {{ page_num }}
+                        </a>
+                    {% else %}
+                        <span class="page-link active">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="page-link disabled">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if beats.has_next %}
+                <a href="{{ url_for('marketplace', page=beats.next_num, genre=current_genre, sort=current_sort) }}" class="page-link">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search" style="font-size: 4rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+            <h3>No beats found</h3>
+            <p>Try adjusting your filters or check back later for new uploads.</p>
+            <a href="{{ url_for('marketplace') }}" class="btn btn-primary">Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.marketplace-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.marketplace-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.marketplace-header p {
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+.marketplace-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+.filter-form {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    color: #ccc;
+    font-weight: bold;
+}
+
+.filter-group select {
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: #fff;
+    padding: 8px 12px;
+}
+
+.results-info {
+    color: #ccc;
+}
+
+.beat-date {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+}
+
+.page-link {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.page-link:hover {
+    background: #ff6b6b;
+}
+
+.page-link.active {
+    background: #ff6b6b;
+}
+
+.page-link.disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .marketplace-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-form {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .filter-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>
+{% endblock %}

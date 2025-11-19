@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="beat-detail">
+    <div class="container">
+        <div class="beat-layout">
+            <div class="beat-media">
+                {% if beat.cover_image %}
+                    <img src="{{ url_for('static', filename='images/' + beat.cover_image) }}" alt="{{ beat.title }}" class="beat-cover-large">
+                {% else %}
+                    <div class="default-cover-large">
+                        <i class="fas fa-music"></i>
+                    </div>
+                {% endif %}
+
+                <div class="audio-player">
+                    <audio id="beatAudio" controls>
+                        {% if is_purchased or current_user.id == beat.user_id %}
+                            <source src="{{ url_for('serve_audio', filename=beat.audio_file) }}" type="audio/mpeg">
+                        {% else %}
+                            <!-- Preview version or limited playback -->
+                        {% endif %}
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+
+            <div class="beat-info-detail">
+                <h1>{{ beat.title }}</h1>
+                <p class="beat-creator">By <strong>{{ beat.creator.username }}</strong></p>
+                <p class="beat-description">{{ beat.description }}</p>
+
+                <div class="beat-meta-detail">
+                    <div class="meta-item">
+                        <span class="meta-label">BPM</span>
+                        <span class="meta-value">{{ beat.bpm }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Genre</span>
+                        <span class="meta-value">{{ beat.genre }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Price</span>
+                        <span class="meta-value price">${{ "%.2f"|format(beat.price) }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Uploaded</span>
+                        <span class="meta-value">{{ beat.created_at.strftime('%B %d, %Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="beat-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if is_purchased or current_user.id == beat.user_id %}
+                            <a href="{{ url_for('serve_audio', filename=beat.audio_file) }}" download class="btn btn-primary">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        {% else %}
+                            <form action="{{ url_for('purchase_beat', beat_id=beat.id) }}" method="POST">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-shopping-cart"></i> Purchase
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">Login to Purchase</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

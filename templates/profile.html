@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <div class="profile-header">
+            <h1>{{ current_user.username }}'s Profile</h1>
+            <p>Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+        </div>
+
+        <div class="profile-tabs">
+            <button class="tab-button active" data-tab="my-beats">My Beats</button>
+            <button class="tab-button" data-tab="purchases">Purchases</button>
+        </div>
+
+        <div class="tab-content">
+            <div id="my-beats" class="tab-pane active">
+                <div class="section-header">
+                    <h2>My Uploaded Beats</h2>
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Upload New Beat
+                    </a>
+                </div>
+
+                {% if beats %}
+                <div class="beats-grid">
+                    {% for beat in beats %}
+                    <div class="beat-card">
+                        <div class="beat-cover">
+                            {% if beat.cover_image %}
+                                <img src="{{ url_for('static', filename='images/' + beat.cover_image) }}" alt="{{ beat.title }}">
+                            {% else %}
+                                <div class="default-cover">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                            {% endif %}
+                            <div class="beat-overlay">
+                                <a href="{{ url_for('beat_detail', beat_id=beat.id) }}" class="btn-play">
+                                    <i class="fas fa-play"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="beat-info">
+                            <h3>{{ beat.title }}</h3>
+                            <p class="beat-price">${{ "%.2f"|format(beat.price) }}</p>
+                            <div class="beat-meta">
+                                <span>{{ beat.bpm }} BPM</span>
+                                <span>{{ beat.genre }}</span>
+                            </div>
+                            <div class="beat-stats">
+                                <span>{{ beat.purchases|length }} sales</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-music" style="font-size: 4rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                    <h3>No beats uploaded yet</h3>
+                    <p>Start sharing your music with the world!</p>
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload Your First Beat</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="purchases" class="tab-pane">
+                <h2>Purchased Beats</h2>
+                {% if purchases %}
+                <div class="beats-grid">
+                    {% for purchase in purchases %}
+                    <div class="beat-card">
+                        <div class="beat-cover">
+                            {% if purchase.beat.cover_image %}
+                                <img src="{{ url_for('static', filename='images/' + purchase.beat.cover_image) }}" alt="{{ purchase.beat.title }}">
+                            {% else %}
+                                <div class="default-cover">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                            {% endif %}
+                            <div class="beat-overlay">
+                                <a href="{{ url_for('beat_detail', beat_id=purchase.beat.id) }}" class="btn-play">
+                                    <i class="fas fa-play"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="beat-info">
+                            <h3>{{ purchase.beat.title }}</h3>
+                            <p class="beat-creator">By {{ purchase.beat.creator.username }}</p>
+                            <p class="beat-price">Purchased for ${{ "%.2f"|format(purchase.beat.price) }}</p>
+                            <div class="beat-meta">
+                                <span>{{ purchase.beat.bpm }} BPM</span>
+                                <span>{{ purchase.beat.genre }}</span>
+                            </div>
+                            <div class="beat-actions">
+                                <a href="{{ url_for('serve_audio', filename=purchase.beat.audio_file) }}" download class="btn btn-secondary btn-small">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart" style="font-size: 4rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                    <h3>No purchases yet</h3>
+                    <p>Explore the marketplace to find amazing beats!</p>
+                    <a href="{{ url_for('marketplace') }}" class="btn btn-primary">Browse Marketplace</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.profile-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #333;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    color: #ccc;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    color: #ff6b6b;
+    border-bottom-color: #ff6b6b;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #ccc;
+}
+
+.beat-stats {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #ff6b6b;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+
+            // Update buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            // Update panes
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

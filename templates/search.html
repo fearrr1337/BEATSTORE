@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-container">
+    <div class="container">
+        <div class="search-header">
+            <h1>Search Results</h1>
+            <p>{% if query %}Searching for "{{ query }}"{% else %}Enter a search term to find beats{% endif %}</p>
+        </div>
+
+        {% if query %}
+            {% if beats %}
+            <div class="results-info">
+                <p>Found {{ beats|length }} result{% if beats|length != 1 %}s{% endif %} for "{{ query }}"</p>
+            </div>
+
+            <div class="beats-grid">
+                {% for beat in beats %}
+                <div class="beat-card">
+                    <div class="beat-cover">
+                        {% if beat.cover_image %}
+                            <img src="{{ url_for('static', filename='images/' + beat.cover_image) }}" alt="{{ beat.title }}">
+                        {% else %}
+                            <div class="default-cover">
+                                <i class="fas fa-music"></i>
+                            </div>
+                        {% endif %}
+                        <div class="beat-overlay">
+                            <a href="{{ url_for('beat_detail', beat_id=beat.id) }}" class="btn-play">
+                                <i class="fas fa-play"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="beat-info">
+                        <h3><a href="{{ url_for('beat_detail', beat_id=beat.id) }}">{{ beat.title }}</a></h3>
+                        <p class="beat-creator">By {{ beat.creator.username }}</p>
+                        <p class="beat-price">${{ "%.2f"|format(beat.price) }}</p>
+                        <div class="beat-meta">
+                            <span>{{ beat.bpm }} BPM</span>
+                            <span>{{ beat.genre }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search" style="font-size: 4rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                <h3>No results found</h3>
+                <p>Try different keywords or browse the <a href="{{ url_for('marketplace') }}" style="color: #ff6b6b;">marketplace</a>.</p>
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search" style="font-size: 4rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+            <h3>Start Searching</h3>
+            <p>Enter a search term in the navigation bar to find beats.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.search-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.search-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-header p {
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+.results-info {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.results-info p {
+    color: #ff6b6b;
+    font-weight: bold;
+    margin: 0;
+}
+</style>
+{% endblock %}

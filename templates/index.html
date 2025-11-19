@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Discover and Sell Amazing Beats</h1>
+        <p>The ultimate marketplace for music producers</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('marketplace') }}" class="btn btn-primary">Explore Beats</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('upload') }}" class="btn btn-secondary">Upload Your Beat</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">Start Selling</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<section class="featured-beats">
+    <div class="container">
+        <h2>Latest Beats</h2>
+        <div class="beats-grid">
+            {% for beat in beats %}
+            <div class="beat-card">
+                <div class="beat-cover">
+                    {% if beat.cover_image %}
+                        <img src="{{ url_for('static', filename='images/' + beat.cover_image) }}" alt="{{ beat.title }}">
+                    {% else %}
+                        <div class="default-cover">
+                            <i class="fas fa-music"></i>
+                        </div>
+                    {% endif %}
+                    <div class="beat-overlay">
+                        <a href="{{ url_for('beat_detail', beat_id=beat.id) }}" class="btn-play">
+                            <i class="fas fa-play"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="beat-info">
+                    <h3>{{ beat.title }}</h3>
+                    <p class="beat-creator">By {{ beat.creator.username }}</p>
+                    <p class="beat-price">${{ "%.2f"|format(beat.price) }}</p>
+                    <div class="beat-meta">
+                        <span>{{ beat.bpm }} BPM</span>
+                        <span>{{ beat.genre }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

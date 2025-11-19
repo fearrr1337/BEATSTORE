@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="container">
+        <div class="upload-header">
+            <h1>Upload Your Beat</h1>
+            <p>Share your music with the world and start earning</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="upload-form">
+            <div class="form-grid">
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+
+                    <div class="form-group">
+                        <label for="title">Beat Title *</label>
+                        <input type="text" id="title" name="title" required placeholder="Enter beat title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Describe your beat..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($) *</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Beat Details</h3>
+
+                    <div class="form-group">
+                        <label for="bpm">BPM *</label>
+                        <input type="number" id="bpm" name="bpm" required placeholder="e.g., 140">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="genre">Genre *</label>
+                        <select id="genre" name="genre" required>
+                            <option value="">Select Genre</option>
+                            <option value="Hip-Hop">Hip-Hop</option>
+                            <option value="Trap">Trap</option>
+                            <option value="R&B">R&B</option>
+                            <option value="Pop">Pop</option>
+                            <option value="Electronic">Electronic</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Jazz">Jazz</option>
+                            <option value="Lo-Fi">Lo-Fi</option>
+                            <option value="Drill">Drill</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="audio_file">Audio File *</label>
+                        <input type="file" id="audio_file" name="audio_file" accept=".mp3,.wav" required>
+                        <small>Supported formats: MP3, WAV (max 16MB)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cover_image">Cover Image</label>
+                        <input type="file" id="cover_image" name="cover_image" accept=".jpg,.jpeg,.png,.gif">
+                        <small>Optional: JPG, PNG, GIF (will be resized to 500x500)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Beat
+                </button>
+                <a href="{{ url_for('profile') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.upload-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.upload-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.upload-header p {
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+.upload-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    margin-bottom: 1.5rem;
+    color: #ff6b6b;
+    border-bottom: 2px solid #333;
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ccc;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #ff6b6b;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.form-actions {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #333;
+}
+
+.form-actions .btn {
+    margin: 0 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const audioFileInput = document.getElementById('audio_file');
+    const priceInput = document.getElementById('price');
+    const bpmInput = document.getElementById('bpm');
+
+    // Price validation
+    priceInput.addEventListener('change', function() {
+        if (this.value < 0) {
+            this.value = 0;
+        }
+    });
+
+    // BPM validation
+    bpmInput.addEventListener('change', function() {
+        if (this.value < 1) {
+            this.value = 1;
+        }
+        if (this.value > 300) {
+            this.value = 300;
+        }
+    });
+
+    // File size validation for audio
+    audioFileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const maxSize = 16 * 1024 * 1024; // 16MB
+            if (file.size > maxSize) {
+                alert('File size must be less than 16MB');
+                this.value = '';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
