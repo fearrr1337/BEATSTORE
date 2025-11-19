@@ -50,9 +50,9 @@
                             <option value="Jazz">Jazz</option>
                             <option value="Lo-Fi">Lo-Fi</option>
                             <option value="Drill">Drill</option>
-                            <option value="Other">New Jazz</option>
-                            <option value="Other">Rage</option>
-                            <option value="Other">Opium</option>
+                            <option value="New-Jazz">New Jazz</option>
+                            <option value="Rage">Rage</option>
+                            <option value="Opium">Opium</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -173,6 +173,26 @@
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const genreSelect = document.getElementById('genre');
+    const form = document.querySelector('.upload-form');
+
+    form.addEventListener('submit', function(e) {
+        if (!genreSelect.value) {
+            e.preventDefault();
+            alert('Please select a genre');
+            genreSelect.focus();
+            return false;
+        }
+    });
+
+    // Подсветка выбранного жанра
+    genreSelect.addEventListener('change', function() {
+        if (this.value) {
+            this.style.borderColor = '#ff6b6b';
+        }
+    });
+});
 document.addEventListener('DOMContentLoaded', function() {
     const audioFileInput = document.getElementById('audio_file');
     const priceInput = document.getElementById('price');

@@ -164,3 +164,66 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+// Footer interactivity
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stats counting
+    const animateStats = () => {
+        const stats = [
+            { element: document.getElementById('beatsCount'), target: 1250, suffix: '+' },
+            { element: document.getElementById('producersCount'), target: 750, suffix: '+' },
+            { element: document.getElementById('salesCount'), target: 2850, suffix: '+' }
+        ];
+
+        stats.forEach(stat => {
+            if (stat.element) {
+                let current = 0;
+                const increment = stat.target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= stat.target) {
+                        current = stat.target;
+                        clearInterval(timer);
+                    }
+                    stat.element.textContent = Math.floor(current) + stat.suffix;
+                }, 50);
+            }
+        });
+    };
+
+    // Newsletter form handling
+    const newsletterForm = document.getElementById('newsletterForm');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('.newsletter-btn');
+            const originalText = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+
+                // Show success message
+                const input = this.querySelector('.newsletter-input');
+                input.value = '';
+                input.placeholder = '✓ Subscribed! Thank you!';
+
+                setTimeout(() => {
+                    input.placeholder = 'Your email address';
+                }, 3000);
+            }, 2000);
+        });
+    }
+
+    // Start stats animation when footer is visible
+    const footerStats = document.querySelector('.footer-stats');
+    if (footerStats) {
+        animateStats(); // Запускаем сразу, так как футер внизу страницы
+    }
+});

@@ -108,6 +108,11 @@ def upload():
         bpm = int(request.form['bpm'])
         genre = request.form['genre']
 
+        # Проверка жанра
+        if not genre:
+            flash('Please select a genre')
+            return redirect(request.url)
+
         # Handle audio file
         if 'audio_file' not in request.files:
             flash('No audio file selected')
@@ -232,6 +237,9 @@ def search():
 @login_required
 def serve_audio(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+
 
 
 if __name__ == '__main__':

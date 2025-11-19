@@ -1,0 +1,112 @@
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-sections">
+            <!-- About Section -->
+            <div class="footer-section">
+                <h3>BeatStore</h3>
+                <p class="footer-description">
+                    The ultimate marketplace for music producers and beat makers.
+                    Discover, share, and sell your unique sound with the world.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-spotify"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h4>Explore</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('marketplace') }}">Marketplace</a></li>
+                    <li><a href="{{ url_for('search') }}">Search</a></li>
+                    <li><a href="#">Top Producers</a></li>
+                    <li><a href="#">Trending Beats</a></li>
+                </ul>
+            </div>
+
+            <!-- For Producers -->
+            <div class="footer-section">
+                <h4>For Producers</h4>
+                <ul class="footer-links">
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('upload') }}">Upload Beats</a></li>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('register') }}">Get Started</a></li>
+                        <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                    {% endif %}
+                    <li><a href="#">Producer Guide</a></li>
+                    <li><a href="#">Royalty Info</a></li>
+                    <li><a href="#">Beat Licensing</a></li>
+                </ul>
+            </div>
+
+            <!-- Support -->
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Copyright</a></li>
+                </ul>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="footer-section">
+                <h4>Stay Updated</h4>
+                <p class="newsletter-text">Get the latest beats and producer news</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email address" class="newsletter-input" required>
+                    <button type="submit" class="newsletter-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div class="payment-methods">
+                    <span>We accept:</span>
+                    <div class="payment-icons">
+                        <i class="fab fa-cc-visa" title="Visa"></i>
+                        <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                        <i class="fab fa-cc-paypal" title="PayPal"></i>
+                        <i class="fab fa-bitcoin" title="Bitcoin"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="footer-bottom">
+            <div class="footer-stats">
+                <div class="stat">
+                    <span class="stat-number" id="beatsCount">1000+</span>
+                    <span class="stat-label">Beats</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="producersCount">500+</span>
+                    <span class="stat-label">Producers</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="salesCount">2000+</span>
+                    <span class="stat-label">Sales</span>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2024 BeatStore. All rights reserved. Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> for music lovers</p>
+            </div>
+        </div>
+    </div>
+</footer>
